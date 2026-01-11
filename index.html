@@ -1,942 +1,649 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
-<title>กฎหมายไทยฉบับล่าสุด (Thai Law Lite)</title>
-
-<!-- Fonts -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>DogTrace | ระบบประกาศตามหาสุนัขหายสมัยใหม่</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-<!-- Tailwind CSS -->
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
-
-<!-- Icons (Material Symbols) -->
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <style>
-  :root {
-    /* 🎨 Official Law Palette */
-    --primary: #1e3a8a;      /* Deep Navy Blue */
-    --primary-dark: #172554; /* Darker Navy */
-    --accent: #d97706;       /* Official Gold */
-    --bg-app: #f3f4f6;       /* Light Gray Background */
-    --bg-card: #ffffff;
-    --text-main: #1f2937;
-    --text-muted: #6b7280;
-    --border: #e5e7eb;
-    
-    --radius-card: 16px;
-    --radius-btn: 12px;
-    --shadow-soft: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
-    --shadow-hover: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-  }
-
-  body {
-    background-color: var(--bg-app);
-    color: var(--text-main);
-    font-family: "Sarabun", sans-serif;
-    -webkit-font-smoothing: antialiased;
-    padding-bottom: 80px; /* Space for FAB */
-  }
-
-  /* --- App Header --- */
-  .app-header {
-    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
-    color: white;
-    padding: 20px 16px 30px;
-    border-radius: 0 0 24px 24px;
-    box-shadow: 0 4px 20px rgba(30, 58, 138, 0.2);
-    margin-bottom: -20px;
-    position: relative;
-    z-index: 10;
-  }
-  .app-title {
-    font-size: 22px;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .app-subtitle {
-    font-size: 14px;
-    opacity: 0.85;
-    margin-top: 4px;
-    font-weight: 300;
-  }
-
-  /* --- Container & Sections --- */
-  .wrap {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 0 16px;
-  }
-  .section {
-    margin-bottom: 24px;
-  }
-
-  /* --- Search Bar (Floating) --- */
-  .search-container {
-    background: white;
-    border-radius: 16px;
-    padding: 6px;
-    box-shadow: 0 10px 30px -10px rgba(0,0,0,0.1);
-    display: flex;
-    gap: 8px;
-    margin-top: 0;
-    position: relative;
-    z-index: 20;
-    border: 1px solid rgba(0,0,0,0.03);
-  }
-  .search-input {
-    flex: 1;
-    border: none;
-    outline: none;
-    padding: 0 16px;
-    font-family: "Sarabun";
-    font-size: 16px;
-    color: var(--text-main);
-    background: transparent;
-  }
-  .search-btn {
-    background: var(--accent);
-    color: white;
-    border: none;
-    border-radius: 12px;
-    width: 48px;
-    height: 48px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .search-btn:active { transform: scale(0.95); }
-
-  /* --- Latest Slider (Card Style) --- */
-  .slider-card {
-    background: white;
-    border-radius: var(--radius-card);
-    padding: 16px;
-    box-shadow: var(--shadow-soft);
-    border: 1px solid var(--border);
-    overflow: hidden;
-  }
-  .slider-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid #f3f4f6;
-  }
-  .slider-title {
-    font-weight: 700;
-    color: var(--primary);
-    font-size: 16px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .latest-viewport { overflow: hidden; }
-  .latest-track { display: flex; transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1); }
-  .latest-slide {
-    min-width: 100%;
-    padding: 4px;
-  }
-  .slide-title {
-    font-weight: 600;
-    font-size: 15px;
-    line-height: 1.5;
-    margin-bottom: 8px;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-  .dots { display: flex; gap: 6px; justify-content: center; margin-top: 12px; }
-  .dot { width: 6px; height: 6px; border-radius: 50%; background: #e5e7eb; transition: 0.3s; }
-  .dot.active { background: var(--primary); width: 18px; border-radius: 4px; }
-
-  /* --- Category Chips (Scrollable) --- */
-  .catbar-scroll {
-    overflow-x: auto;
-    white-space: nowrap;
-    padding: 4px 4px 12px 4px; /* Space for shadow */
-    margin: 0 -16px; /* Bleed to edge on mobile */
-    padding-left: 16px;
-    padding-right: 16px;
-    scrollbar-width: none;
-  }
-  .catbar-scroll::-webkit-scrollbar { display: none; }
-  
-  .chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 10px 16px;
-    background: white;
-    border: 1px solid var(--border);
-    border-radius: 50px; /* Pill shape */
-    margin-right: 8px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--text-muted);
-    transition: all 0.2s;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.03);
-  }
-  .chip.active {
-    background: var(--primary);
-    color: white;
-    border-color: var(--primary);
-    box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3);
-  }
-  .chip:active { transform: scale(0.96); }
-
-  /* --- List Cards --- */
-  .section-title {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--text-main);
-    margin-bottom: 12px;
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-  }
-  .list-container {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-  .law-card {
-    background: var(--bg-card);
-    border-radius: var(--radius-card);
-    padding: 16px;
-    border: 1px solid rgba(229, 231, 235, 0.5);
-    box-shadow: var(--shadow-soft);
-    transition: all 0.2s;
-    position: relative;
-    overflow: hidden;
-  }
-  .law-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-hover);
-    border-color: var(--primary);
-  }
-  .law-card::before {
-    content: '';
-    position: absolute;
-    left: 0; top: 0; bottom: 0;
-    width: 4px;
-    background: var(--primary);
-    opacity: 0;
-    transition: 0.2s;
-  }
-  .law-card:hover::before { opacity: 1; }
-
-  .law-title {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--text-main);
-    margin-bottom: 8px;
-    line-height: 1.5;
-  }
-  .law-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    font-size: 12px;
-    color: var(--text-muted);
-    margin-bottom: 12px;
-  }
-  .tag {
-    background: #f3f4f6;
-    padding: 2px 8px;
-    border-radius: 4px;
-    border: 1px solid #e5e7eb;
-    display: inline-flex;
-    align-items: center;
-  }
-  .action-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 8px 16px;
-    background: #eff6ff;
-    color: var(--primary);
-    font-weight: 600;
-    font-size: 13px;
-    border-radius: 8px;
-    text-decoration: none;
-    transition: 0.2s;
-  }
-  .action-btn:hover { background: #dbeafe; }
-
-  /* --- Pagination --- */
-  .loadbar {
-    display: flex;
-    justify-content: center;
-    gap: 12px;
-    margin-top: 20px;
-  }
-  .btn-nav {
-    padding: 10px 20px;
-    border-radius: var(--radius-btn);
-    font-weight: 600;
-    font-size: 14px;
-    cursor: pointer;
-    border: none;
-    transition: 0.2s;
-  }
-  .btn-nav.next { background: var(--primary); color: white; box-shadow: 0 4px 10px rgba(30,58,138,0.2); }
-  .btn-nav.prev { background: white; color: var(--text-muted); border: 1px solid var(--border); }
-  .btn-nav:disabled { opacity: 0.5; cursor: not-allowed; }
-
-  /* --- Chat FAB & Modal --- */
-  #fab-chat-toggle {
-    position: fixed;
-    bottom: 24px;
-    right: 24px;
-    width: 56px;
-    height: 56px;
-    background: linear-gradient(135deg, var(--accent), #b45309);
-    color: white;
-    border: none;
-    border-radius: 20px; /* Squircle */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 8px 24px rgba(217, 119, 6, 0.4);
-    cursor: pointer;
-    z-index: 100;
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  }
-  #fab-chat-toggle:hover { transform: scale(1.1) rotate(-5deg); }
-  #fab-chat-toggle .material-symbols-rounded { font-size: 28px; }
-
-  #chatbot-modal {
-    background: rgba(0,0,0,0.5); /* Dim background */
-    backdrop-filter: blur(2px);
-  }
-  .chat-window {
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    background: white;
-    font-family: "Sarabun", sans-serif;
-  }
-  @media (min-width: 640px) {
-    .chat-window {
-      height: 600px;
-      width: 400px;
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      border-radius: 24px;
-      overflow: hidden;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+    :root {
+        --primary: #6366f1;
+        --secondary: #e11d48;
     }
-  }
+    body { 
+        font-family: 'Prompt', sans-serif; 
+        background-color: #fcfdfe; 
+        color: #0f172a; 
+        -webkit-tap-highlight-color: transparent; 
+    }
+    
+    /* Scroll Lock */
+    .no-scroll {
+        overflow: hidden;
+    }
 
-  .chat-header {
-    background: var(--primary);
-    padding: 16px;
-    color: white;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .chat-bubble { font-size: 15px; line-height: 1.5; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-  .chat-bubble-user { background: var(--primary); color: white; border-radius: 16px 16px 2px 16px; }
-  .chat-bubble-model { background: #f3f4f6; color: #1f2937; border-radius: 16px 16px 16px 2px; }
+    /* Card Design */
+    .dog-card { 
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
+        border: 1px solid #f1f5f9;
+    }
+    .dog-card:hover { 
+        transform: translateY(-8px); 
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+        border-color: #e2e8f0;
+    }
 
-  /* Gemini Animation Bar */
-  .gemini-thinking-bar {
-    height: 3px;
-    background: #e5e7eb;
-    border-radius: 2px;
-    overflow: hidden;
-    position: relative;
-    width: 60px;
-  }
-  .gemini-thinking-bar::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; height: 100%; width: 50%;
-    background: var(--accent);
-    animation: thinking 1.5s infinite ease-in-out;
-  }
-  @keyframes thinking {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(250%); }
-  }
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: #f8fafc; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 
-  /* Utilities */
-  .empty { padding: 40px; text-align: center; color: var(--text-muted); background: white; border-radius: 16px; border: 1px dashed var(--border); }
-  .material-symbols-rounded { vertical-align: middle; }
+    /* Dialog Animation */
+    dialog { 
+        transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); 
+        opacity: 0; 
+        transform: scale(0.9); 
+    }
+    dialog[open] { opacity: 1; transform: scale(1); }
+    dialog::backdrop { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(8px); }
+
+    /* Utilities */
+    .btn-primary { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); }
+    .btn-danger { background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%); }
+    .status-lost { background: #fff1f2; color: #e11d48; }
+    
+    #map, #viewMap { height: 240px; width: 100%; border-radius: 1.25rem; z-index: 1; box-shadow: inset 0 2px 4px 0 rgba(0,0,0,0.06); }
+    
+    .glass-nav {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+    }
+
+    /* Hide arrow for number input */
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 </style>
 </head>
-<body>
+<body class="min-h-screen flex flex-col">
 
-<!-- Header ส่วนหัวแอพ -->
-<header class="app-header">
-  <div class="wrap">
-    <div class="app-title">
-      <span class="material-symbols-rounded" style="font-size: 32px;">balance</span>
-      <span>Thai Law Lite</span>
-    </div>
-    <div class="app-subtitle">คลังกฎหมายไทยฉบับพกพา อัพเดทล่าสุด</div>
+<!-- Navigation -->
+<nav class="glass-nav sticky top-0 z-40 border-b border-slate-100 shadow-sm">
+  <div class="max-w-7xl mx-auto px-4 h-16 flex justify-between items-center">
+      <div class="flex items-center gap-3 cursor-pointer group" onclick="refreshApp()">
+        <div class="bg-indigo-600 text-white w-10 h-10 rounded-xl shadow-lg flex items-center justify-center group-hover:rotate-12 transition-transform duration-300">
+            <i class="fa-solid fa-paw text-xl"></i>
+        </div>
+        <div class="flex flex-col leading-none">
+            <span class="font-bold text-xl tracking-tight text-slate-800">Dog<span class="text-indigo-600">Trace</span></span>
+            <span class="text-[10px] font-medium text-slate-400 tracking-widest uppercase">Lost & Found</span>
+        </div>
+      </div>
+      
+      <!-- Desktop Search -->
+      <div class="hidden md:flex flex-grow justify-center px-10">
+          <div class="relative w-full max-w-md group">
+              <input id="q_desktop" type="text" placeholder="ค้นหาตามสายพันธุ์ หรือพื้นที่..." class="w-full pl-12 pr-4 py-2.5 bg-slate-100 border-2 border-transparent rounded-2xl text-sm focus:bg-white focus:border-indigo-400 focus:ring-0 outline-none transition-all">
+              <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-slate-400 group-focus-within:text-indigo-500 transition-colors"></i>
+          </div>
+      </div>
+      
+      <button onclick="openNewPostModal()" class="btn-primary text-white px-5 py-2.5 rounded-2xl text-sm font-bold shadow-lg shadow-indigo-100 active:scale-95 transition-all flex items-center gap-2">
+          <i class="fa-solid fa-bullhorn"></i> <span class="hidden sm:inline">ลงประกาศ</span>
+      </button>
   </div>
-</header>
+</nav>
 
-<!-- Main Content -->
-<main class="wrap" style="position: relative;">
-  
-  <!-- Search Bar (Lifts up into header space slightly) -->
-  <section class="section" style="margin-top: -24px;">
-    <div class="search-container" role="search">
-      <input id="q" class="search-input" type="search" placeholder="ค้นหาชื่อกฎหมาย, มาตรา, หรือคำสำคัญ..." aria-label="ค้นหากฎหมาย">
-      <button id="btnSearch" class="search-btn" type="button">
-        <span class="material-symbols-rounded">search</span>
-      </button>
-    </div>
-  </section>
-
-  <!-- Slider -->
-  <section class="section">
-    <div class="slider-card">
-      <div class="slider-header">
-        <div class="slider-title">
-          <span class="material-symbols-rounded" style="color:var(--accent)">campaign</span>
-          ประกาศล่าสุด
+<!-- Mobile Search Bar -->
+<div class="md:hidden bg-white px-4 py-3 border-b border-slate-50">
+    <div class="flex gap-2">
+        <select id="filter_province_mobile" class="bg-slate-50 border border-slate-100 rounded-xl px-2 py-2.5 text-xs outline-none focus:ring-2 focus:ring-indigo-400 w-1/3">
+            <option value="all">ทุกพื้นที่</option>
+        </select>
+        <div class="relative flex-grow">
+            <input id="q_mobile" type="text" placeholder="ระบุสายพันธุ์..." class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-xs outline-none focus:bg-white focus:ring-2 focus:ring-indigo-400 transition-all">
+            <i class="fa-solid fa-search absolute left-3.5 top-3.5 text-slate-400"></i>
         </div>
-        <span class="text-xs text-gray-400">Auto Slide</span>
-      </div>
-      <div class="latest-viewport" id="latestViewport">
-        <div id="latestTrack" class="latest-track" aria-live="polite"></div>
-      </div>
-      <div id="dots" class="dots" aria-hidden="true"></div>
     </div>
-  </section>
-
-  <!-- Categories (Scrollable Pills) -->
-  <section class="section">
-    <div class="catbar-scroll" id="catbar" role="tablist" aria-label="เลือกหมวดกฎหมาย">
-      <!-- Generated via JS -->
-    </div>
-  </section>
-
-  <!-- List Data -->
-  <section class="section">
-    <div class="section-title">
-      <span id="panelTitle">รายการกฎหมาย</span>
-      <span id="panelNote" class="text-xs font-normal text-gray-500">แสดงผล</span>
-    </div>
-    
-    <div id="list" class="list-container">
-      <!-- Cards go here -->
-    </div>
-
-    <div class="loadbar">
-      <button id="btnPrev" class="btn-nav prev" type="button" style="display:none">
-        <span class="material-symbols-rounded">arrow_back</span> ย้อนกลับ
-      </button>
-      <button id="btnNext" class="btn-nav next" type="button" style="display:none">
-        ถัดไป <span class="material-symbols-rounded">arrow_forward</span>
-      </button>
-    </div>
-  </section>
-
-</main>
-
-<!-- Floating Action Button for AI -->
-<button id="fab-chat-toggle" title="ปรึกษา Thai Law AI">
-  <span class="material-symbols-rounded">smart_toy</span>
-</button>
-
-<!-- Chat Modal -->
-<div id="chatbot-modal" class="chatbot-hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300">
-  <div class="chat-window w-full bg-gray-50 flex flex-col transform transition-transform duration-300 translate-y-full sm:translate-y-0 sm:scale-95" id="chat-window-inner">
-    
-    <!-- Chat Header -->
-    <header class="chat-header shadow-md shrink-0">
-      <div class="flex items-center gap-2">
-        <span class="material-symbols-rounded">smart_toy</span>
-        <div>
-          <h1 class="text-lg font-bold">Thai Law AI</h1>
-          <p class="text-xs opacity-80">ผู้ช่วยค้นหากฎหมายอัจฉริยะ</p>
-        </div>
-      </div>
-      <div class="flex gap-2">
-        <button id="new-chat-btn" class="text-xs bg-white/20 hover:bg-white/30 text-white py-1 px-3 rounded-lg transition">
-          ล้างแชท
-        </button>
-        <button id="chatbot-close-btn" class="text-white hover:text-red-200 transition">
-          <span class="material-symbols-rounded">close</span>
-        </button>
-      </div>
-    </header>
-
-    <!-- Chat History -->
-    <main id="chat-history" class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
-      <div class="flex items-start space-x-2">
-        <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
-          <span class="material-symbols-rounded text-blue-600 text-lg">smart_toy</span>
-        </div>
-        <div class="chat-bubble chat-bubble-model p-3 max-w-[85%] relative bg-white border border-gray-100 shadow-sm">
-          <p>สวัสดีครับ! ผมคือ AI ผู้ช่วยด้านกฎหมาย ยินดีให้ความช่วยเหลือครับ สอบถามเรื่องข้อกฎหมายหรือการสืบค้นได้เลยครับ</p>
-        </div>
-      </div>
-    </main>
-
-    <!-- Thinking Indicator -->
-    <div id="thinking-indicator" class="px-4 pb-2 hidden">
-      <div class="flex items-center space-x-2">
-        <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
-          <span class="material-symbols-rounded text-blue-600 text-lg">smart_toy</span>
-        </div>
-        <div class="bg-white p-3 rounded-2xl border border-gray-100 shadow-sm">
-          <div class="gemini-thinking-bar"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Input Area -->
-    <footer class="p-3 bg-white border-t border-gray-200 shrink-0">
-      <div class="flex items-center gap-2 bg-gray-100 rounded-full px-4 py-2 border border-gray-200 focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 transition-all">
-        <input id="user-input" type="text" placeholder="พิมพ์คำถามที่นี่..." class="flex-1 bg-transparent outline-none text-sm py-1">
-        <button id="send-btn" class="text-blue-600 hover:text-blue-800 transition p-1">
-          <span class="material-symbols-rounded">send</span>
-        </button>
-      </div>
-    </footer>
-
-  </div>
 </div>
 
-<!-- ========================================================================================= -->
-<!-- JAVASCRIPT LOGIC (KEPT EXACTLY AS ORIGINAL LOGIC, ONLY RENDER FUNCTIONS UPDATED FOR UI) -->
-<!-- ========================================================================================= -->
+<main class="flex-grow max-w-7xl mx-auto px-4 py-8 w-full">
+    <header class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
+        <div class="space-y-1">
+            <h1 class="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">ตามหาน้องหมา</h1>
+            <div class="flex items-center gap-2 text-slate-500 text-sm sm:text-base font-medium">
+                <span class="flex h-2.5 w-2.5 relative">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500"></span>
+                </span>
+                ขณะนี้มี <span id="countDisplay" class="text-indigo-600 font-bold">0</span> รายการประกาศล่าสุด
+            </div>
+        </div>
+        <div class="hidden md:block">
+            <div class="flex items-center gap-3">
+                <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">แสดงพื้นที่:</label>
+                <select id="filter_province_desktop" class="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm shadow-sm focus:ring-2 focus:ring-indigo-400 outline-none cursor-pointer font-medium">
+                    <option value="all">ทุกจังหวัด</option>
+                </select>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Loading State -->
+    <div id="loading" class="flex flex-col items-center justify-center py-32 hidden">
+        <div class="relative flex items-center justify-center">
+            <div class="w-16 h-16 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin"></div>
+            <i class="fa-solid fa-dog absolute text-indigo-200 text-xl"></i>
+        </div>
+        <p class="text-slate-400 font-bold mt-6 tracking-widest uppercase text-xs">กำลังโหลดข้อมูล...</p>
+    </div>
+    
+    <!-- Grid Board -->
+    <section id="board" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"></section>
+
+    <!-- Pagination -->
+    <div id="pagination" class="flex justify-center items-center gap-3 mt-16 mb-10">
+        <button onclick="changePage(-1)" id="btnPrev" class="w-12 h-12 flex items-center justify-center bg-white border border-slate-200 rounded-2xl hover:bg-slate-50 disabled:opacity-30 shadow-sm transition-all"><i class="fa-solid fa-arrow-left"></i></button>
+        <div class="bg-slate-900 text-white px-6 py-3 rounded-2xl font-bold text-sm shadow-lg shadow-slate-200" id="pageIndicator">1 / 1</div>
+        <button onclick="changePage(1)" id="btnNext" class="w-12 h-12 flex items-center justify-center bg-white border border-slate-200 rounded-2xl hover:bg-slate-50 disabled:opacity-30 shadow-sm transition-all"><i class="fa-solid fa-arrow-right"></i></button>
+    </div>
+</main>
+
+<footer class="bg-white border-t border-slate-100 py-12 text-center">
+    <div class="flex justify-center gap-6 mb-6 grayscale opacity-50">
+        <i class="fa-solid fa-shield-dog text-2xl"></i>
+        <i class="fa-solid fa-heart-pulse text-2xl"></i>
+        <i class="fa-solid fa-map-location-dot text-2xl"></i>
+    </div>
+    <p class="text-slate-400 text-xs font-bold tracking-widest uppercase">DogTrace Platform © 2024 • Helping Pets Find Home</p>
+</footer>
+
+<!-- View Detail Dialog -->
+<dialog id="viewDlg" class="bg-white rounded-[2.5rem] shadow-2xl p-0 w-[95%] max-w-xl m-auto overflow-hidden border border-slate-100">
+    <div class="relative h-80 sm:h-96 bg-slate-900">
+        <div id="viewImages" class="h-full flex overflow-x-auto snap-x snap-mandatory scroll-smooth hide-scrollbar"></div>
+        
+        <!-- Action Buttons -->
+        <div class="absolute top-6 right-6 flex gap-3 z-20">
+            <button id="btnDeletePost" class="bg-white/20 backdrop-blur-xl text-white w-12 h-12 rounded-2xl flex items-center justify-center hover:bg-rose-500 transition-all shadow-xl border border-white/30" title="ลบโพสต์">
+                <i class="fa-solid fa-trash-can"></i>
+            </button>
+            <button onclick="closeViewModal()" class="bg-white/20 backdrop-blur-xl text-white w-12 h-12 rounded-2xl flex items-center justify-center hover:bg-white/40 transition-all shadow-xl border border-white/30">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+        </div>
+        
+        <!-- Image Dots -->
+        <div id="imageDots" class="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-10"></div>
+        
+        <div class="absolute top-6 left-6 z-10">
+            <span class="status-lost px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest shadow-lg border border-rose-100">สุนัขหาย</span>
+        </div>
+    </div>
+
+    <div class="p-8 sm:p-10">
+        <div class="flex justify-between items-start mb-6">
+            <div>
+                <h2 id="viewTitle" class="text-2xl sm:text-3xl font-black text-slate-800 leading-tight mb-2"></h2>
+                <div id="viewLocation" class="text-slate-500 font-bold text-sm flex items-center gap-2"></div>
+            </div>
+            <div class="text-right">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">รางวัล</p>
+                <p id="viewPrice" class="text-indigo-600 font-black text-2xl"></p>
+            </div>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-4 mb-8">
+            <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">ผู้แจ้ง</p>
+                <p id="viewContact" class="text-slate-800 font-bold text-sm truncate"></p>
+            </div>
+            <div class="bg-indigo-50 rounded-2xl p-4 border border-indigo-100">
+                <p class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">เวลาที่หาย</p>
+                <p class="text-indigo-800 font-bold text-sm">ไม่ระบุ</p>
+            </div>
+        </div>
+
+        <div class="space-y-6">
+            <div>
+                <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-3">ลักษณะน้องที่สังเกตได้</h4>
+                <div class="bg-slate-50/50 rounded-3xl p-6 border-2 border-dashed border-slate-100">
+                    <p id="viewBody" class="text-slate-700 text-sm leading-relaxed whitespace-pre-line font-medium"></p>
+                </div>
+            </div>
+
+            <div id="viewMapContainer" class="space-y-3">
+                 <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">พิกัดล่าสุดที่พบเห็น</h4>
+                 <div id="viewMap"></div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-10">
+            <a id="btnCall" href="#" class="btn-primary text-white py-4 rounded-2xl font-black text-center flex items-center justify-center gap-3 shadow-xl shadow-indigo-100 hover:opacity-90 transition-all"><i class="fa-solid fa-phone"></i> ติดต่อเจ้าของ</a>
+            <button onclick="closeViewModal()" class="bg-slate-100 text-slate-600 py-4 rounded-2xl font-black hover:bg-slate-200 transition-colors">ปิดหน้านี้</button>
+        </div>
+    </div>
+</dialog>
+
+<!-- Create Post Dialog -->
+<dialog id="dlg" class="bg-white rounded-[2.5rem] shadow-2xl p-0 w-[95%] max-w-xl m-auto overflow-hidden border border-slate-100">
+    <div class="px-8 py-6 border-b border-slate-50 flex justify-between items-center bg-slate-50/30">
+        <div>
+            <h3 class="text-xl font-black text-slate-800">แจ้งน้องหมาหาย</h3>
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">กรุณาระบุข้อมูลตามจริง</p>
+        </div>
+        <button onclick="closeModal()" class="text-slate-300 hover:text-rose-500 transition-colors"><i class="fa-solid fa-circle-xmark text-3xl"></i></button>
+    </div>
+    
+    <div class="p-8 overflow-y-auto max-h-[70vh] space-y-6 custom-scrollbar">
+        <!-- Info -->
+        <div class="space-y-4">
+            <div>
+                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">สายพันธุ์ / ชื่อเรียก <span class="text-rose-500">*</span></label>
+                <input id="title" type="text" class="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-indigo-400 outline-none transition-all font-medium" placeholder="เช่น ไซบีเรียน สีเทา-ขาว">
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">จังหวัด <span class="text-rose-500">*</span></label>
+                    <select id="input_province" class="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl outline-none focus:border-indigo-400 font-medium"></select>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">รางวัลนำส่ง (บาท)</label>
+                    <input id="price" type="number" class="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl outline-none focus:border-indigo-400 font-medium" placeholder="ระบุตัวเลข (ถ้ามี)">
+                </div>
+            </div>
+        </div>
+
+        <!-- Photos -->
+        <div>
+            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-3">รูปถ่ายชัดเจน (สูงสุด 3 รูป)</label>
+            <div class="grid grid-cols-3 gap-4">
+                <div id="previewList" class="contents"></div>
+                <label id="uploadBtn" class="aspect-square border-2 border-dashed border-slate-200 rounded-3xl flex flex-col items-center justify-center cursor-pointer hover:bg-indigo-50 hover:border-indigo-300 transition-all group">
+                    <i class="fa-solid fa-cloud-arrow-up text-2xl text-slate-300 group-hover:text-indigo-400 transition-colors"></i>
+                    <span class="text-[9px] font-black text-slate-400 mt-2 uppercase">อัปโหลด</span>
+                    <input id="img" type="file" class="hidden" accept="image/*" multiple onchange="appendImages(this)">
+                </label>
+            </div>
+        </div>
+
+        <!-- Map -->
+        <div>
+            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-3">ระบุพิกัดที่หายล่าสุด <span class="text-rose-500">*</span></label>
+            <div id="map" class="border-2 border-slate-100 mb-2"></div>
+            <div class="flex justify-between items-center px-1">
+                <span id="latlng_display" class="text-[10px] text-slate-400 font-bold italic tracking-wider">ยังไม่ได้ปักหมุด</span>
+                <button type="button" onclick="searchLocation()" class="text-[10px] text-indigo-600 font-black hover:underline uppercase tracking-widest">ค้นหาตามชื่อจังหวัด</button>
+            </div>
+        </div>
+
+        <!-- Description -->
+        <div>
+            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">ตำหนิและเบอร์ติดต่อ</label>
+            <textarea id="body" rows="3" class="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl outline-none focus:border-indigo-400 resize-none font-medium" placeholder="ระบุเบอร์โทรศัพท์ และจุดสังเกตสำคัญ..."></textarea>
+        </div>
+    </div>
+
+    <div class="p-8 bg-slate-50 border-t border-slate-100 flex gap-4">
+        <button onclick="closeModal()" class="flex-1 py-4 text-slate-400 font-black uppercase tracking-widest text-xs hover:text-slate-600 transition-colors">ยกเลิก</button>
+        <button onclick="savePost()" id="btnSave" class="flex-[2] btn-primary text-white py-4 rounded-2xl font-black shadow-xl shadow-indigo-100 active:scale-95 transition-all text-sm uppercase tracking-widest">ยืนยันประกาศ</button>
+    </div>
+</dialog>
 
 <script>
-/* ===== ค่าคงที่/ตั้งค่า ===== */
-const PAGE_SIZE = 5;
-let lawsData = [];
-async function loadJsonAndStart() {
-  try {
-    const res = await fetch("./lawsData.json", { cache: "no-store" });
-    lawsData = await res.json();
-    renderChips();
-    loadAllData();
-    const u = new URL(location.href);
-    const initQ = u.searchParams.get("q") || "";
-    if (initQ) { document.querySelector("#q").value = initQ; doSearch(); }
-  } catch (e) {
-    console.error("โหลด lawsData.json ไม่สำเร็จ", e);
-    document.getElementById("list").innerHTML =
-      `<div class="empty">ไม่สามารถโหลดข้อมูลได้</div>`;
-  }
-}
+/** * CONFIGURATION
+ * เปลี่ยน API_URL เป็นของ Google Apps Script เมื่อพร้อมใช้งาน
+ */
+const API_URL = "https://script.google.com/macros/s/AKfycbwxCHD5mM9os89iaTdaqQ0IFj2DHCZRDAwhRrKHJLXk7cOxrkjkUTNEIcKIjnI9yJScrw/exec"; 
 
-const COLS = { 
-  category: "หมวด", 
-  title: "ชื่อกฎหมาย", 
-  date: "วันที่", 
-  volume: "เล่มตอน", 
-  url: "URL_PD"
-};
-const col = k => COLS[k];
+const PROVINCES = ["กรุงเทพมหานคร", "เชียงใหม่", "ชลบุรี", "ภูเก็ต", "ขอนแก่น", "นครราชสีมา", "นนทบุรี", "ปทุมธานี", "ระยอง", "สมุทรปราการ", "สงขลา", "สุราษฎร์ธานี"].sort();
 
-const FIXED_CATS = [
-  {key:"ประมวลกฎหมาย",     label:"ประมวลกฎหมาย",     emoji:"book_2"},
-  {key:"รัฐธรรมนูญ",        label:"รัฐธรรมนูญ",        emoji:"gavel"},
-  {key:"พระราชกฤษฎีกา",   label:"พระราชกฤษฎีกา",   emoji:"account_balance"},
-  {key:"พระราชกำหนด",      label:"พระราชกำหนด",      emoji:"assignment_late"},
-  {key:"พระราชบัญญัติ",    label:"พระราชบัญญัติ",    emoji:"menu_book"},
-  {key:"ระเบียบคณะกรรมการ",      label:"กฎกระทรวง",        emoji:"policy"}
+// State
+let posts = [];
+let filteredPosts = [];
+let currentPage = 1;
+const ITEMS_PER_PAGE = 8;
+let formImages = [];
+let map, marker, viewMap, viewMarker;
+
+// Dummy Initial Data
+const mockPosts = [
+    {
+        id: 1,
+        title: "น้องนำโชค - โกลเด้นสีเข้ม",
+        price: 3000,
+        province: "เชียงใหม่",
+        address: "รอบคูเมือง ประตูท่าแพ",
+        contact_name: "คุณธนกร 089-xxx-xxxx",
+        body: "น้องวิ่งออกจากบ้านเมื่อเย็นวาน ปลอกคอสีแดง มีป้ายชื่อ\nน้องเชื่องมาก ใครพบเห็นโปรดโทรแจ้งทันทีครับ",
+        images: ["https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&w=800&q=80"],
+        lat: 18.788,
+        lng: 98.992
+    },
+    {
+        id: 2,
+        title: "บิ๊กกี้ - พุดเดิ้ลสีขาว",
+        price: 0,
+        province: "กรุงเทพมหานคร",
+        address: "ย่านสุขุมวิท 101",
+        contact_name: "คุณจอย 082-xxx-xxxx",
+        body: "น้องหายไปจากคลินิกสัตว์ ขนหยิกสีขาวล้วน ไม่ใส่ปลอกคอ",
+        images: ["https://images.unsplash.com/photo-1591768575198-88dac53fbd0a?auto=format&fit=crop&w=800&q=80"],
+        lat: 13.693,
+        lng: 100.612
+    }
 ];
 
-function normalizeCatName(raw=""){
-  const s = (raw||"").trim();
-  const map = new Map([
-    ["ประมวลกฎหมาย","ประมวลกฎหมาย"], ["ประมวลกฏหมาย","ประมวลกฎหมาย"],
-    ["รัฐธรรมนูญ","รัฐธรรมนูญ"],
-    ["พระราชกฤษฎีกา","พระราชกฤษฎีกา"], ["พระรากฎีกา","พระราชกฤษฎีกา"], ["พระราชกฎีกา","พระราชกฤษฎีกา"],
-    ["พระราชกำหนด","พระราชกำหนด"],
-    ["พระราชบัญญัติ","พระราชบัญญัติ"],
-    ["ระเบียบคณะกรรมการ","ระเบียบคณะกรรมการ"], ["ระเบียบคณะกรรมการ","ระเบียบคณะกรรมการ"]
-  ]);
-  return map.get(s) || s;
-}
-const $ = (s,el=document)=>el.querySelector(s);
-
-function sanitizeUrl(u=''){
-  try{ 
-    const url=new URL(u, location.origin); 
-    if(url.protocol==='http:'||url.protocol==='https:') return url.href; 
-  }catch{}
-  return '';
-}
-
-const TH_MONTHS={'ม.ค.':1,'ก.พ.':2,'มี.ค.':3,'เม.ย.':4,'พ.ค.':5,'มิ.ย.':6,'ก.ค.':7,'ส.ค.':8,'ก.ย.':9,'ต.ค.':10,'พ.ย.':11,'ธ.ค.':12,'มกราคม':1,'กุมภาพันธ์':2,'มีนาคม':3,'เมษายน':4,'พฤษภาคม':5,'มิถุนายน':6,'กรกฎาคม':7,'สิงหาคม':8,'กันยายน':9,'ตุลาคม':10,'พฤศจิกายน':11,'ธันวาคม':12};
-function thDigitsToArabic(s=''){const m={'๐':'0','๑':'1','๒':'2','๓':'3','๔':'4','๕':'5','๖':'6','๗':'7','๘':'8','๙':'9'}; return s.replace(/[๐-๙]/g,ch=>m[ch]??ch);}
-function parseDateTS(s){
-  if(!s) return 0; s=s.trim();
-  const onlyBuddhist = s.match(/^พ\.ศ\.?\s*([0-9๐-๙]{4})$/);
-  if(onlyBuddhist){ let y=parseInt(thDigitsToArabic(onlyBuddhist[1]),10)-543; return new Date(y,0,1).getTime(); }
-  const th = s.match(/^([0-9๐-๙]{1,2})\s+([ก-๙\.]+)\s+([0-๙0-9]{4})$/);
-  if(th){
-    const d=parseInt(thDigitsToArabic(th[1]),10);
-    const m=TH_MONTHS[th[2]]||0;
-    let y=parseInt(thDigitsToArabic(th[3]),10);
-    if(y>2400) y-=543;
-    return (m&&d&&y)? new Date(y,m-1,d).getTime():0;
-  }
-  if(/^\d{4}-\d{2}-\d{2}$/.test(s)){ let [y,m,d]=s.split('-').map(n=>+n); if(y>2400) y-=543; return new Date(y,(m||1)-1,(d||1)).getTime(); }
-  if(/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(s)){ let [d,m,y]=s.split('/').map(n=>+n); if(y>2400) y-=543; return new Date(y,(m||1)-1,(d||1)).getTime(); }
-  return 0;
-}
-function fmtDateThai(s){
-  if(!s) return '';
-  if(/^[0-9]{4}-/.test(s)||/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(s)){
-    let y,m,d;
-    if(s.includes('-')){[y,m,d]=s.split('-').map(n=>+n);} else{[d,m,y]=s.split('/').map(n=>+n);}
-    if(y<2400) y+=543;
-    const mm=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
-    return `${d} ${mm[(m||1)-1]} ${y}`;
-  }
-  return s;
-}
-
-const catbar = $("#catbar");
-const listEl = $("#list");
-const btnNext = $("#btnNext");
-const btnPrev = $("#btnPrev");
-const panelTitle = $("#panelTitle");
-const panelNote = $("#panelNote");
-const CatState = {};
-let selectedCat = null;
-const allIndex = [];
-let LatestData = [];
-
-function escapeHtml(s){return (''+s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-
-// Updated Render Card function for new UI
-function renderCard(r){
-  const t=r[col('title')]||'', d=r[col('date')]||'', v=r[col('volume')]||'', c=r[col('category')]||'', u=r[col('url')]||'';
-  const safe = sanitizeUrl(u);
-  // UI Design: Card like a Law Document
-  return `<article class="law-card">
-    <div class="law-title">${escapeHtml(t)||'(ไม่มีชื่อเรื่อง)'}</div>
-    <div class="law-meta">
-      ${c?`<span class="tag"><span class="material-symbols-rounded" style="font-size:14px;margin-right:2px">folder</span> ${escapeHtml(c)}</span>`:''}
-      ${d?`<span class="tag"><span class="material-symbols-rounded" style="font-size:14px;margin-right:2px">calendar_today</span> ${escapeHtml(fmtDateThai(d))}</span>`:''}
-      ${v?`<span class="tag"><span class="material-symbols-rounded" style="font-size:14px;margin-right:2px">book</span> ${escapeHtml(v)}</span>`:''}
-    </div>
-    <div class="actions">
-      ${safe?`<a class="action-btn" href="${safe}" target="_blank" rel="noopener noreferrer">
-        <span class="material-symbols-rounded" style="font-size:18px">visibility</span> อ่านฉบับเต็ม
-      </a>`:`<span class="text-xs text-gray-400">ไม่มีไฟล์แนบ</span>`}
-    </div>
-  </article>`;
-}
-
-// Updated Render Chips
-function renderChips(){
-  catbar.innerHTML = FIXED_CATS.map(c => `
-    <button class="chip" type="button" role="tab" aria-selected="false" data-cat="${c.key}">
-      <span class="material-symbols-rounded" style="font-size:18px">${c.emoji}</span><span>${c.label}</span>
-    </button>
-  `).join('');
-}
-
-function loadAllData(){
-  listEl.innerHTML=`<div class="empty">กำลังโหลดฐานข้อมูลกฎหมาย...</div>`;
-  try {
-    FIXED_CATS.forEach(({key}) => {
-        CatState[key] = {rows: [], page: 0, loaded: true};
+function init() {
+    populateProvinces();
+    initMap();
+    loadPosts();
+    
+    // Listeners
+    document.getElementById('q_desktop').addEventListener('input', debounce(applyFilters, 300));
+    document.getElementById('q_mobile').addEventListener('input', debounce(applyFilters, 300));
+    document.getElementById('filter_province_desktop').addEventListener('change', (e) => {
+        document.getElementById('filter_province_mobile').value = e.target.value;
+        applyFilters();
     });
-    lawsData.forEach(item => {
-        const normCat = normalizeCatName(item[col('category')]);
-        if (CatState[normCat]) {
-            const processedItem = {...item, _ts: parseDateTS(item[col('date')])};
-            CatState[normCat].rows.push(processedItem);
-            allIndex.push(processedItem);
-        }
+    document.getElementById('filter_province_mobile').addEventListener('change', (e) => {
+        document.getElementById('filter_province_desktop').value = e.target.value;
+        applyFilters();
     });
-    FIXED_CATS.forEach(({key}) => {
-        if (CatState[key].rows.length > 0) {
-            CatState[key].rows.sort((a, b) => (b._ts || 0) - (a._ts || 0));
-            LatestData.push({cat: key, row: CatState[key].rows[0]});
-        }
+}
+
+function populateProvinces() {
+    const list = PROVINCES.map(p => `<option value="${p}">${p}</option>`).join('');
+    document.getElementById('input_province').innerHTML = `<option value="">กรุณาเลือกจังหวัด</option>${list}`;
+    document.getElementById('filter_province_desktop').innerHTML = `<option value="all">ทุกพื้นที่</option>${list}`;
+    document.getElementById('filter_province_mobile').innerHTML = `<option value="all">ทุกพื้นที่</option>${list}`;
+}
+
+async function loadPosts() {
+    document.getElementById('loading').classList.remove('hidden');
+    document.getElementById('board').classList.add('hidden');
+    
+    try {
+        // ในระบบจริงจะดึงจาก API_URL
+        posts = mockPosts; 
+    } catch (e) {
+        posts = mockPosts;
+    } finally {
+        applyFilters();
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('board').classList.remove('hidden');
+    }
+}
+
+function applyFilters() {
+    const q = (document.getElementById('q_desktop').value || document.getElementById('q_mobile').value).toLowerCase();
+    const prov = document.getElementById('filter_province_desktop').value;
+    
+    filteredPosts = posts.filter(p => {
+        const textMatch = (p.title + p.body).toLowerCase().includes(q);
+        const provMatch = prov === 'all' || p.province === prov;
+        return textMatch && provMatch;
     });
-    catbar.addEventListener('click', e=>{
-      const b=e.target.closest('button[data-cat]'); if(!b) return;
-      selectCategory(b.dataset.cat); 
-      // Scroll chip into view
-      b.scrollIntoView({behavior: 'smooth', block: 'nearest', inline: 'center'});
-    });
-    selectCategory(FIXED_CATS[0].key);
-    buildLatestSlider();
-  } catch(e) {
-    listEl.innerHTML=`<div class="empty">เกิดข้อผิดพลาดในการประมวลผล</div>`;
-    console.error(e);
-  }
+    
+    document.getElementById('countDisplay').textContent = filteredPosts.length;
+    currentPage = 1;
+    renderBoard();
 }
 
-function renderPage(cat){
-  const st=CatState[cat]; if(!st) return;
-  const start=st.page*PAGE_SIZE, end=start+PAGE_SIZE;
-  const slice=st.rows.slice(start,end);
-  listEl.innerHTML = slice.length? slice.map(renderCard).join('') : `<div class="empty">ไม่พบรายการในหมวดนี้</div>`;
-  btnPrev.style.display = (st.page>0)? 'inline-flex':'none';
-  btnNext.style.display = (end < st.rows.length)? 'inline-flex':'none';
-  panelTitle.textContent = `${cat}`;
-  panelNote.textContent  = `แสดง ${start+1}-${Math.min(end, st.rows.length)} จาก ${st.rows.length}`;
-}
-
-function selectCategory(cat){
-  if(selectedCat===cat) return;
-  selectedCat=cat;
-  [...catbar.querySelectorAll('.chip')].forEach(b=>{
-    const on = b.dataset.cat===cat;
-    b.classList.toggle('active', on);
-    b.setAttribute('aria-selected', on?'true':'false');
-  });
-  if(CatState[cat]){
-    CatState[cat].page=0;
-    renderPage(cat);
-  } else {
-    listEl.innerHTML = `<div class="empty">ไม่พบหมวดหมู่ "${cat}"</div>`;
-  }
-}
-
-btnNext.addEventListener('click', ()=>{
-  if(!selectedCat) return;
-  const st=CatState[selectedCat]; if(!st) return;
-  st.page+=1; renderPage(selectedCat);
-  listEl.scrollIntoView({behavior:'smooth', block:'start'});
-});
-btnPrev.addEventListener('click', ()=>{
-  if(!selectedCat) return;
-  const st=CatState[selectedCat]; if(!st) return;
-  if(st.page>0){ st.page-=1; renderPage(selectedCat); }
-  listEl.scrollIntoView({behavior:'smooth', block:'start'});
-});
-
-const elQ = $("#q"), elBtnSearch=$("#btnSearch");
-elBtnSearch.addEventListener('click', doSearch);
-elQ.addEventListener('keydown', e=>{ if(e.key==='Enter') doSearch(); });
-
-function normalizeThai(s){ return (s||'').toLowerCase().replace(/\s+/g,' ').trim().normalize('NFC').replace(/[\u0E31\u0E34-\u0E3A\u0E47-\u0E4E]/g,''); }
-function doSearch(){
-  const q=(elQ.value||'').trim();
-  if(!q){ if(selectedCat) renderPage(selectedCat); return; }
-  const nq=normalizeThai(q);
-  const results = allIndex.filter(o=>{
-    const t=normalizeThai(o[col('title')]||''),
-          v=normalizeThai(o[col('volume')]||''),
-          c=normalizeThai(o[col('category')]||'');
-    return t.includes(nq)||v.includes(nq)||c.includes(nq);
-  }).sort((a,b)=>(b._ts||0)-(a._ts||0));
-  
-  listEl.innerHTML = results.slice(0,50).map(renderCard).join('') || `<div class="empty">ไม่พบข้อมูลที่ค้นหา</div>`;
-  btnNext.style.display='none';
-  btnPrev.style.display='none';
-  panelTitle.textContent = `ผลการค้นหา: “${q}”`;
-  panelNote.textContent  = `พบ ${results.length} รายการ`;
-}
-
-const latestViewport = $("#latestViewport");
-const latestTrack = $("#latestTrack");
-const dotsEl = $("#dots");
-let latestSlides=[]; let latestIndex=0; let autoTimer=null;
-
-function updateLatestSlider(){
-  const w = latestViewport.getBoundingClientRect().width;
-  latestTrack.style.transform = `translateX(${-latestIndex*w}px)`;
-  [...dotsEl.children].forEach((d,i)=>d.classList.toggle('active', i===latestIndex));
-}
-function nextLatest(){ if(!latestSlides.length) return; latestIndex = (latestIndex + 1) % latestSlides.length; updateLatestSlider(); }
-function startAuto(){ stopAuto(); autoTimer = setInterval(nextLatest, 5000); }
-function stopAuto(){ if(autoTimer){ clearInterval(autoTimer); autoTimer=null; } }
-
-document.addEventListener('visibilitychange', ()=>{ document.hidden ? stopAuto() : startAuto(); });
-latestViewport.addEventListener('mouseenter', stopAuto);
-latestViewport.addEventListener('mouseleave', startAuto);
-window.addEventListener('resize', updateLatestSlider);
-
-function buildLatestSlider(){
-  latestTrack.innerHTML=''; dotsEl.innerHTML='';
-  latestSlides = LatestData.filter(Boolean).sort((a,b)=>(b.row._ts||0) - (a.row._ts||0));
-  if(!latestSlides.length){
-    latestTrack.innerHTML = `<div class="latest-slide"><div class="text-gray-400 text-center py-4">ยังไม่มีข้อมูลอัปเดต</div></div>`;
-    return;
-  }
-  latestTrack.innerHTML = latestSlides.map(({cat,row})=>{
-    const t=row[col('title')]||'', d=row[col('date')]||'', u=row[col('url')]||'#';
-    const safe = sanitizeUrl(u);
-    return `<div class="latest-slide">
-      <div class="slide-title">${escapeHtml(t)}</div>
-      <div class="flex items-center gap-2 text-xs text-gray-500 mb-2">
-        <span class="bg-blue-50 text-blue-700 px-2 py-0.5 rounded border border-blue-100">${escapeHtml(cat)}</span>
-        <span>${escapeHtml(fmtDateThai(d))}</span>
-      </div>
-      ${safe?`<a class="text-sm font-semibold text-blue-700 hover:underline flex items-center gap-1" href="${safe}" target="_blank">อ่านต่อ <span class="material-symbols-rounded" style="font-size:14px">arrow_forward</span></a>`:''}
-    </div>`;
-  }).join('');
-  dotsEl.innerHTML = latestSlides.map((_,i)=>`<span class="dot ${i===0?'active':''}"></span>`).join('');
-  latestIndex=0; updateLatestSlider(); startAuto();
-}
-
-loadJsonAndStart();
-</script>
-
-
-<script type="module">
-/* =========================================
-   CHATBOT LOGIC (Keep Functional)
-   ========================================= */
-const BACKEND_URL = 'https://us-central1-law-ai-14740.cloudfunctions.net/api/chat';
-let chatHistory = [];
-
-const chatHistoryEl = document.getElementById('chat-history');
-const userInput   = document.getElementById('user-input');
-const sendBtn     = document.getElementById('send-btn');
-const newChatBtn  = document.getElementById('new-chat-btn');
-const thinkingIndicator = document.getElementById('thinking-indicator');
-
-function addChatBubble(message, isUser = true) {
-  const bubbleType = isUser ? 'user' : 'model';
-  const iconBg = isUser ? 'bg-blue-600' : 'bg-blue-100';
-  const iconColor = isUser ? 'text-white' : 'text-blue-600';
-  const iconName = isUser ? 'person' : 'smart_toy';
-  
-  const wrap = document.createElement('div');
-  wrap.className = `flex items-start space-x-2 ${isUser ? 'flex-row-reverse space-x-reverse' : ''}`;
-  
-  const iconDiv = document.createElement('div');
-  iconDiv.className = `w-8 h-8 rounded-full ${iconBg} flex items-center justify-center shrink-0`;
-  iconDiv.innerHTML = `<span class="material-symbols-rounded ${iconColor} text-lg">${iconName}</span>`;
-  
-  const bubble = document.createElement('div');
-  bubble.className = `chat-bubble chat-bubble-${bubbleType} p-3 max-w-[85%] relative ${isUser ? '' : 'bg-white border border-gray-100 shadow-sm'}`;
-  bubble.innerHTML = `<p></p>`;
-  bubble.querySelector('p').innerText = message; 
-  
-  wrap.appendChild(iconDiv);
-  wrap.appendChild(bubble);
-  chatHistoryEl.appendChild(wrap);
-  chatHistoryEl.scrollTop = chatHistoryEl.scrollHeight;
-}
-
-function addChatError(message) {
-  const w = document.createElement('div');
-  w.className = 'flex justify-center my-2';
-  w.innerHTML = `<span class="bg-red-50 text-red-600 text-xs px-3 py-1 rounded-full border border-red-100">${message}</span>`;
-  chatHistoryEl.appendChild(w);
-  chatHistoryEl.scrollTop = chatHistoryEl.scrollHeight;
-}
-
-function setThinking(on) {
-  thinkingIndicator.classList.toggle('hidden', !on);
-  if (on) chatHistoryEl.scrollTop = chatHistoryEl.scrollHeight;
-}
-
-async function handleSend() {
-  const message = (userInput.value || '').trim();
-  if (!message) return;
-
-  addChatBubble(message, true);
-  userInput.value = '';
-  setThinking(true);
-  sendBtn.disabled = true;
-
-  chatHistory.push({ role: "user", parts: [{ text: message }] });
-
-  try {
-    const response = await fetch(BACKEND_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ history: chatHistory }) 
-    });
-
-    if (!response.ok) {
-      const errData = await response.json();
-      throw new Error(errData.error || `Server error: ${response.status}`);
+function renderBoard() {
+    const board = document.getElementById('board');
+    board.innerHTML = '';
+    
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    const items = filteredPosts.slice(start, start + ITEMS_PER_PAGE);
+    
+    if (items.length === 0) {
+        board.innerHTML = `<div class="col-span-full py-20 text-center"><i class="fa-solid fa-face-sad-tear text-4xl text-slate-200 mb-4"></i><p class="text-slate-400 font-bold">ไม่พบข้อมูลที่ค้นหา</p></div>`;
+        return;
     }
 
-    const data = await response.json();
-    const aiReply = data.reply;
-
-    chatHistory.push({ role: "model", parts: [{ text: aiReply }] });
-    setThinking(false);
-    addChatBubble(aiReply, false);
-
-  } catch (err) {
-    console.error("Fetch Error:", err);
-    setThinking(false);
-    addChatError(`ขออภัย ระบบขัดข้อง: ${err.message}`);
-  } finally {
-    sendBtn.disabled = false;
-  }
+    items.forEach(p => {
+        const thumb = p.images && p.images[0] ? p.images[0] : 'https://placehold.co/400x400?text=No+Photo';
+        const card = document.createElement('div');
+        card.className = "dog-card bg-white rounded-[2rem] overflow-hidden cursor-pointer flex flex-col h-full";
+        card.onclick = () => viewPost(p.id);
+        card.innerHTML = `
+            <div class="h-60 relative">
+                <img src="${thumb}" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+                <div class="absolute top-4 left-4 flex gap-2">
+                    <span class="bg-rose-500 text-white text-[9px] font-black px-3 py-1.5 rounded-lg shadow-xl uppercase tracking-widest">Lost</span>
+                    <span class="bg-white/90 backdrop-blur-md text-slate-800 text-[9px] font-black px-3 py-1.5 rounded-lg shadow-xl uppercase tracking-widest">${p.province}</span>
+                </div>
+            </div>
+            <div class="p-6 flex flex-col flex-grow">
+                <h3 class="font-black text-slate-800 line-clamp-1 text-lg leading-tight mb-2">${p.title}</h3>
+                <p class="text-xs text-slate-500 font-medium line-clamp-2 h-8 leading-relaxed">${p.body}</p>
+                <div class="mt-auto pt-5 flex justify-between items-center border-t border-slate-50">
+                    <span class="text-indigo-600 font-black text-lg">${p.price > 0 ? '฿' + p.price.toLocaleString() : 'สินน้ำใจ'}</span>
+                    <div class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-indigo-50 group-hover:text-indigo-500 transition-colors">
+                        <i class="fa-solid fa-chevron-right text-xs"></i>
+                    </div>
+                </div>
+            </div>
+        `;
+        board.appendChild(card);
+    });
+    
+    updatePagination();
 }
 
-sendBtn.addEventListener('click', handleSend);
-userInput.addEventListener('keydown', e => {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault();
-    handleSend();
-  }
-});
+function updatePagination() {
+    const totalPages = Math.ceil(filteredPosts.length / ITEMS_PER_PAGE) || 1;
+    document.getElementById('pageIndicator').textContent = `${currentPage} / ${totalPages}`;
+    document.getElementById('btnPrev').disabled = currentPage === 1;
+    document.getElementById('btnNext').disabled = currentPage === totalPages;
+}
 
-newChatBtn.addEventListener('click', async () => {
-  chatHistoryEl.innerHTML = `
-    <div class="flex items-start space-x-2">
-      <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
-        <span class="material-symbols-rounded text-blue-600 text-lg">smart_toy</span>
-      </div>
-      <div class="chat-bubble chat-bubble-model p-3 max-w-[85%] relative bg-white border border-gray-100 shadow-sm">
-        <p>เริ่มสนทนาใหม่เรียบร้อยครับ ถามผมได้เลย!</p>
-      </div>
-    </div>`;
-  userInput.value = '';
-  setThinking(false);
-  chatHistory = []; 
-});
+function changePage(delta) {
+    currentPage += delta;
+    renderBoard();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
 
-/* Modal Logic */
-const fabToggle = document.getElementById('fab-chat-toggle');
-const chatModal = document.getElementById('chatbot-modal');
-const chatbotCloseBtn = document.getElementById('chatbot-close-btn');
-const chatWindowInner = document.getElementById('chat-window-inner');
+// Map Functions
+function initMap() {
+    map = L.map('map', { zoomControl: false }).setView([13.756, 100.501], 10);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    map.on('click', e => {
+        const {lat, lng} = e.latlng;
+        if (marker) marker.setLatLng([lat, lng]);
+        else marker = L.marker([lat, lng], {draggable: true}).addTo(map);
+        document.getElementById('latlng_display').textContent = `พิกัด: ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+    });
+}
 
-if (fabToggle && chatModal && chatbotCloseBtn) {
-  fabToggle.addEventListener('click', () => {
-    chatModal.classList.remove('chatbot-hidden');
-    chatModal.classList.remove('opacity-0', 'pointer-events-none');
+function viewPost(id) {
+    const post = posts.find(p => p.id === id);
+    if (!post) return;
     
-    // Animation in
-    chatWindowInner.classList.remove('translate-y-full', 'scale-95');
+    document.getElementById('viewTitle').textContent = post.title;
+    document.getElementById('viewPrice').textContent = post.price > 0 ? '฿' + post.price.toLocaleString() : 'ไม่มีรางวัล';
+    document.getElementById('viewLocation').textContent = `${post.province} • ${post.address || 'ไม่ระบุพิกัดละเอียด'}`;
+    document.getElementById('viewContact').textContent = post.contact_name || 'ไม่ระบุ';
+    document.getElementById('viewBody').textContent = post.body;
     
-    fabToggle.style.transform = 'scale(0)';
-    setTimeout(() => { document.getElementById('user-input').focus(); }, 300);
-  });
-  
-  chatbotCloseBtn.addEventListener('click', () => {
-    // Animation out
-    chatWindowInner.classList.add('translate-y-full', 'scale-95');
+    const container = document.getElementById('viewImages');
+    const dots = document.getElementById('imageDots');
+    container.innerHTML = '';
+    dots.innerHTML = '';
     
+    const imgs = (post.images || []).length > 0 ? post.images : ['https://placehold.co/600x400?text=No+Photo'];
+    
+    imgs.forEach((url, i) => {
+        container.innerHTML += `<img src="${url}" class="h-full w-full object-cover snap-center flex-shrink-0">`;
+        dots.innerHTML += `<div class="w-2 h-2 rounded-full ${i === 0 ? 'bg-white' : 'bg-white/40'}"></div>`;
+    });
+    
+    // View Map
+    if (post.lat && post.lng) {
+        document.getElementById('viewMapContainer').classList.remove('hidden');
+        if (!viewMap) {
+            viewMap = L.map('viewMap', { zoomControl: false });
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(viewMap);
+        }
+        setTimeout(() => {
+            viewMap.invalidateSize();
+            viewMap.setView([post.lat, post.lng], 15);
+            if (viewMarker) viewMap.removeLayer(viewMarker);
+            viewMarker = L.marker([post.lat, post.lng]).addTo(viewMap);
+        }, 300);
+    } else {
+        document.getElementById('viewMapContainer').classList.add('hidden');
+    }
+
+    // Delete Button Listener
+    document.getElementById('btnDeletePost').onclick = () => deletePost(post.id);
+    
+    document.body.classList.add('no-scroll');
+    document.getElementById('viewDlg').showModal();
+}
+
+function deletePost(id) {
+    Swal.fire({
+        title: 'ยืนยันการลบ?',
+        text: "คุณต้องการลบประกาศนี้ใช่หรือไม่ ข้อมูลจะหายไปถาวร",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#e11d48',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: 'ยืนยัน ลบข้อมูล',
+        cancelButtonText: 'ยกเลิก'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            posts = posts.filter(p => p.id !== id);
+            applyFilters();
+            closeViewModal();
+            Swal.fire({
+                title: 'ลบสำเร็จ!',
+                text: 'ข้อมูลถูกลบออกจากระบบแล้ว',
+                icon: 'success',
+                confirmButtonColor: '#6366f1'
+            });
+        }
+    });
+}
+
+function closeViewModal() { 
+    document.body.classList.remove('no-scroll');
+    document.getElementById('viewDlg').close(); 
+}
+
+function openNewPostModal() { 
+    document.body.classList.add('no-scroll');
+    document.getElementById('dlg').showModal(); 
+    setTimeout(() => map.invalidateSize(), 300);
+}
+
+function closeModal() { 
+    document.body.classList.remove('no-scroll');
+    document.getElementById('dlg').close(); 
+}
+
+// Upload Preview
+function appendImages(input) {
+    if (input.files) {
+        Array.from(input.files).slice(0, 3 - formImages.length).forEach(file => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                formImages.push(e.target.result);
+                renderFormImages();
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+}
+
+function renderFormImages() {
+    const list = document.getElementById('previewList');
+    list.innerHTML = formImages.map((src, idx) => `
+        <div class="relative aspect-square rounded-[1.5rem] overflow-hidden border border-slate-100 group">
+            <img src="${src}" class="w-full h-full object-cover">
+            <button onclick="removeImage(${idx})" class="absolute inset-0 bg-rose-500/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"><i class="fa-solid fa-trash-can"></i></button>
+        </div>
+    `).join('');
+    document.getElementById('uploadBtn').style.display = formImages.length >= 3 ? 'none' : 'flex';
+}
+
+function removeImage(idx) {
+    formImages.splice(idx, 1);
+    renderFormImages();
+}
+
+async function searchLocation() {
+    const city = document.getElementById('input_province').value;
+    if (!city) return Swal.fire({ title: 'แจ้งเตือน', text: 'กรุณาเลือกจังหวัดก่อน', icon: 'info' });
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${city}&limit=1`);
+    const data = await res.json();
+    if (data.length > 0) map.setView([data[0].lat, data[0].lon], 12);
+}
+
+function debounce(func, wait) {
+    let timeout;
+    return (...args) => {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+    };
+}
+
+async function savePost() {
+    const title = document.getElementById('title').value;
+    const prov = document.getElementById('input_province').value;
+    if(!title || !prov) return Swal.fire({ title: 'ข้อมูลไม่ครบ', text: 'กรุณากรอกสายพันธุ์และเลือกจังหวัด', icon: 'warning' });
+    
+    const btn = document.getElementById('btnSave');
+    btn.disabled = true;
+    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> กำลังบันทึก...`;
+
+    // Mock API Call
     setTimeout(() => {
-        chatModal.classList.add('opacity-0', 'pointer-events-none');
-        chatModal.classList.add('chatbot-hidden');
-        fabToggle.style.transform = 'scale(1)';
-    }, 300);
-  });
+        const newPost = {
+            id: Date.now(),
+            title: title,
+            price: Number(document.getElementById('price').value) || 0,
+            province: prov,
+            address: "",
+            contact_name: "ผู้ใช้ปัจจุบัน",
+            body: document.getElementById('body').value,
+            images: [...formImages],
+            lat: marker ? marker.getLatLng().lat : null,
+            lng: marker ? marker.getLatLng().lng : null
+        };
+        posts.unshift(newPost);
+        applyFilters();
+        
+        Swal.fire({ title: 'ส่งข้อมูลเรียบร้อย', text: 'เราได้บันทึกประกาศของคุณเข้าระบบแล้ว', icon: 'success', confirmButtonColor: '#6366f1' });
+        closeModal();
+        btn.disabled = false;
+        btn.innerHTML = `ยืนยันประกาศ`;
+        
+        // Reset form
+        document.getElementById('title').value = "";
+        document.getElementById('price').value = "";
+        document.getElementById('body').value = "";
+        formImages = [];
+        renderFormImages();
+        if(marker) { map.removeLayer(marker); marker = null; }
+    }, 1500);
 }
+
+function refreshApp() { location.reload(); }
+
+init();
 </script>
 </body>
 </html>
